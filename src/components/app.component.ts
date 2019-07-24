@@ -1,3 +1,4 @@
+import { EntrySercice } from './../services/entryService';
 import { GridEntry } from './../models/gridEntry';
 import { Entry } from './../models/entry';
 import { css, customElement, html, LitElement, property, unsafeCSS, query } from 'lit-element';
@@ -14,6 +15,8 @@ const componentCSS = require('./app.component.scss');
 export class BroncoCalendar extends LitElement {
 
   static styles = css`${unsafeCSS(componentCSS)}`;
+
+  entryService = new EntrySercice();
 
   @property() currentDate!: Date;
 
@@ -39,45 +42,10 @@ export class BroncoCalendar extends LitElement {
   gridEntries: GridEntry[] = [];
 
   async firstUpdated() {
-    this.currentDate = new Date(2019, 4, 2);
+    this.currentDate = new Date();
     this.maxDays = this.getMaxDaysofMonth(this.currentDate);
-
-    // MockData
-    const endDate = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth(), this.currentDate.getDate() + 12);
-    this.entries.push({ title: 'Urlaub', color: 'success', startDate: this.currentDate, endDate: endDate });
-    // MockData end
-
-    this.entries.forEach(entry => {
-      let length = entry.endDate.getDate() - entry.startDate.getDate();
-      let gridRow = Math.round(2 + (entry.startDate.getDate() / 7));
-      let columnStart = (entry.startDate.getDate() + this.getWeekdaysOfLastMonth().length) % 7;
-
-      let columnEnd = entry.startDate.getMonth() === entry.endDate.getMonth() ?
-      entry.endDate.getDate() - entry.startDate.getDate() + 3 :
-      9 - this.getWeekdaysOfNextMonth().length - 1 + entry.endDate.getDate();
-      console.log('length: ' + length);
-
-      while (length > 0) {
-
-        const gridEntry: GridEntry = {
-          title: entry.title,
-          color: entry.color,
-          startDate: entry.startDate,
-          endDate: entry.endDate,
-          gridRow: gridRow,
-          gridColumnStart: columnStart,
-          gridColumnEnd: columnEnd
-        }
-        console.log(entry.endDate.getDate() - entry.startDate.getDate() + 2);
-        this.gridEntries.push(gridEntry);
-
-        length = length - 5;
-        gridRow++;
-        columnStart = 1;
-        length < 7 ? columnEnd = length : '';
-      }
-
-    });
+    this.entries = this.entryService.getEntries().filter(e =>
+      (e.startDate.getMonth() === this.currentDate.getMonth()) && (e.startDate.getFullYear() === this.currentDate.getFullYear()));
 
     this.loaded = true;
   }
@@ -143,6 +111,8 @@ export class BroncoCalendar extends LitElement {
   updateDate(newDate: Date) {
     this.currentDate = newDate;
     this.maxDays = this.getMaxDaysofMonth(newDate);
+    this.entries = this.entryService.getEntries().filter(e =>
+      (e.startDate.getMonth() === this.currentDate.getMonth()) && (e.startDate.getFullYear() === this.currentDate.getFullYear()));
   }
 
   getStyleMap(gridEntry: GridEntry) {
@@ -154,15 +124,30 @@ export class BroncoCalendar extends LitElement {
 
   }
 
+
+  changeStatusOfDay(event: any) {
+    const dayElement = event.path[0] as HTMLElement;
+
+    if (dayElement.classList.contains('day')) {
+      dayElement.classList.contains('day--occupied') ?
+        dayElement.classList.remove('day--occupied') :
+        dayElement.classList.add('day--occupied');
+    }
+  }
+
+  filterEntriesForDay(num: number): Entry[] {
+    return this.entries.filter(entry => entry.startDate.getDate() <= num && entry.endDate.getDate() >= num);
+  }
+
   render() {
     return html`
     ${this.loaded ?
-        html`
+    html`
     <div class="calendar-container">
       <div class="calendar-header">
-        <div class="icon">
-          <bronco-icon iconName="keyboard_arrow_left" @click=${() => this.previousMonth()}></bronco-icon>
-        </div>
+
+        <bronco-icon iconName="keyboard_arrow_left" @click=${()=> this.previousMonth()}></bronco-icon>
+
 
         <div class="monthYear">
           <span>${this.monthNames[this.currentDate.getMonth()]}</span>
@@ -170,9 +155,9 @@ export class BroncoCalendar extends LitElement {
           <span>${this.currentDate.getFullYear()}</span>
         </div>
 
-        <div class="icon">
-          <bronco-icon iconName="keyboard_arrow_right" @click=${() => this.nextMonth()}></bronco-icon>
-        </div>
+
+        <bronco-icon iconName="keyboard_arrow_right" @click=${()=> this.nextMonth()}></bronco-icon>
+
 
 
       </div>
@@ -181,29 +166,43 @@ export class BroncoCalendar extends LitElement {
 
         ${this.getWeekdaysOfLastMonth().map(num => html`<div class="day day--disabled">${num}</div>`)}
 
-        ${this.getNumberArray().map(num => html`<div class="day">${num}</div>`)}
+        ${this.getNumberArray().map(num => html`<div
+          id="day-${num}" class="day">
+          <span id="num">${num}</span>
+          ${this.filterEntriesForDay(num).map(e =>
+            html`<div class="entry">
+            ${e.title}
+          </div>
+          <div class="entryDetail">
+            <h2>${e.title}</h2>
+            <p>15-17th November</p>
+          </div>
+          `)}
+        </div>`)}
 
         ${this.getWeekdaysOfNextMonth().map(num => html`<div class="day day--disabled">${num}</div>`)}
 
-        ${this.gridEntries.filter(e => e.startDate.getMonth() === this.currentDate.getMonth()).map(entry => html`
-        <section style='${styleMap(this.getStyleMap(entry))}' class="task task--${entry.color}">${entry.title},
-          ${entry.startDate.getDate()} - ${entry.endDate.getDate()} ${this.monthNames[entry.endDate.getMonth()]}</section>
-        `)}
+
 
 
         <!-- <section class="task task--warning">Projects</section>
-                                                    <section class="task task--danger">Design Sprint</section>
-                                                    <section class="task task--primary">Product Checkup 1
-                                                      <div class="task__detail">
-                                                        <h2>Product Checkup 1</h2>
-                                                        <p>15-17th November</p>
-                                                      </div>
-                                                    </section>
-                                                    <section class="task task--info">Product Checkup 2</section> -->
+                                                                                        <section class="task task--danger">Design Sprint</section>
+                                                                                        <section class="task task--primary">Product Checkup 1
+                                                                                          <div class="task__detail">
+                                                                                            <h2>Product Checkup 1</h2>
+                                                                                            <p>15-17th November</p>
+                                                                                          </div>
+                                                                                        </section>
+                                                                                        <section class="task task--info">Product Checkup 2</section> -->
       </div>
     </div>
     ` :
-        ''}
+    ''}
 `
   }
 }
+
+// ${this.gridEntries.filter(e => e.startDate.getMonth() === this.currentDate.getMonth()).map(entry => html`
+// <section style='${styleMap(this.getStyleMap(entry))}' class="task task--${entry.color}">${entry.title},
+//   ${entry.startDate.getDate()} - ${entry.endDate.getDate()} ${this.monthNames[entry.endDate.getMonth()]}</section>
+// `)}
