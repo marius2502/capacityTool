@@ -172,6 +172,10 @@ export class BroncoCalendar extends LitElement {
 
         ${this.getNumberArray().map(num => html`<div id="day-${num}" class="day ${this.filterEntriesForDay(num).length ? 'day--occupied' : ''}">
           <span id="num">${num}</span>
+          ${this.filterEntriesForDay(num).map(e =>
+            html`
+            <span class="entry">${e.title}</span>
+            `)}
           ${this.filterEntriesForDay(num).length ? html`<div class="entryDetail">
             ${this.filterEntriesForDay(num).map(e =>
             html`
@@ -185,7 +189,7 @@ export class BroncoCalendar extends LitElement {
 
         </div>`)}
 
-        ${this.getWeekdaysOfNextMonth().map(num => html`<div class="day day--disabled">${num}</div>`)}
+        ${this.getWeekdaysOfNextMonth().map(num => html`<div class="day day--disabled"><span id="numBottom">${num}</span></div>`)}
 
         <!-- <section class="task task--warning">Projects</section>
                               <section class="task task--danger">Design Sprint</section>
