@@ -139,14 +139,18 @@ export class BroncoCalendar extends LitElement {
     return this.entries.filter(entry => entry.startDate.getDate() <= num && entry.endDate.getDate() >= num);
   }
 
+  formatDate(date: Date) {
+    return `${date.getDate()}.${date.getMonth() + 1}.${date.getFullYear()}`
+  }
+
   render() {
     return html`
     ${this.loaded ?
-    html`
+        html`
     <div class="calendar-container">
       <div class="calendar-header">
 
-        <bronco-icon iconName="keyboard_arrow_left" @click=${()=> this.previousMonth()}></bronco-icon>
+        <bronco-icon iconName="keyboard_arrow_left" @click=${() => this.previousMonth()}></bronco-icon>
 
 
         <div class="monthYear">
@@ -156,7 +160,7 @@ export class BroncoCalendar extends LitElement {
         </div>
 
 
-        <bronco-icon iconName="keyboard_arrow_right" @click=${()=> this.nextMonth()}></bronco-icon>
+        <bronco-icon iconName="keyboard_arrow_right" @click=${() => this.nextMonth()}></bronco-icon>
 
 
 
@@ -166,38 +170,34 @@ export class BroncoCalendar extends LitElement {
 
         ${this.getWeekdaysOfLastMonth().map(num => html`<div class="day day--disabled">${num}</div>`)}
 
-        ${this.getNumberArray().map(num => html`<div
-          id="day-${num}" class="day">
+        ${this.getNumberArray().map(num => html`<div id="day-${num}" class="day ${this.filterEntriesForDay(num).length ? 'day--occupied' : ''}">
           <span id="num">${num}</span>
-          ${this.filterEntriesForDay(num).map(e =>
-            html`<div class="entry">
-            ${e.title}
-          </div>
           <div class="entryDetail">
-            <h2>${e.title}</h2>
-            <p>15-17th November</p>
+            ${this.filterEntriesForDay(num).map(e =>
+          html`
+            <div class="entryInfo">
+              <h2>${e.title}</h2>
+              <p>${this.formatDate(e.startDate)} - ${this.formatDate(e.startDate)}</p>
+            </div>
+            `)}
           </div>
-          `)}
         </div>`)}
 
         ${this.getWeekdaysOfNextMonth().map(num => html`<div class="day day--disabled">${num}</div>`)}
 
-
-
-
         <!-- <section class="task task--warning">Projects</section>
-                                                                                        <section class="task task--danger">Design Sprint</section>
-                                                                                        <section class="task task--primary">Product Checkup 1
-                                                                                          <div class="task__detail">
-                                                                                            <h2>Product Checkup 1</h2>
-                                                                                            <p>15-17th November</p>
-                                                                                          </div>
-                                                                                        </section>
-                                                                                        <section class="task task--info">Product Checkup 2</section> -->
+                          <section class="task task--danger">Design Sprint</section>
+                          <section class="task task--primary">Product Checkup 1
+                            <div class="task__detail">
+                              <h2>Product Checkup 1</h2>
+                              <p>15-17th November</p>
+                            </div>
+                          </section>
+                          <section class="task task--info">Product Checkup 2</section> -->
       </div>
     </div>
     ` :
-    ''}
+        ''}
 `
   }
 }

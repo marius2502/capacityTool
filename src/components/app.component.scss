@@ -18,7 +18,7 @@
   grid-template-rows: 50px;
   grid-auto-rows: 100px;
   overflow: auto;
-  margin-bottom: 100px;
+  padding-bottom: 200px;
 
   &-container {
     width: 80%;
@@ -42,6 +42,7 @@
       --box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
       margin: 10px;
       border-radius: 50%;
+      --size: 30px;
     }
 
     .monthYear {
@@ -156,11 +157,13 @@
 .day > .entry {
   pointer-events: none;
   width: 100%;
-  background: rgba(#fdc5d0, 0.7);
+  background: rgba(#ff355d, 0.7);
+  color: white;
   z-index: 9999;
 }
 
-.day:hover {
+.day:hover,
+.entryDetail:hover {
   .entryDetail {
     display: block;
     z-index: 9999 !important;
@@ -177,16 +180,15 @@
   display: none;
   position: absolute;
   left: 0;
-  top: calc(100% + 5px);
+  top: calc(100% - 5px);
   background: #fff;
   border: 1px solid rgba(166, 168, 179, 0.2);
   color: #000;
-  padding: 10px;
-  margin: 5px;
   box-sizing: border-box;
   border-radius: 4px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
-  z-index: 99;
+  z-index: 9999;
+  width: 100%;
 
   &:after,
   &:before {
@@ -212,17 +214,28 @@
     margin-left: -6px;
   }
 
-  h2 {
-    font-size: 15px;
+  .entryInfo {
     margin: 0;
-    color: #51565d;
-  }
+    padding: 0;
+    padding: 15px;
+    cursor: pointer;
 
-  p {
-    margin-top: 4px;
-    font-size: 12px;
-    margin-bottom: 0;
-    font-weight: 500;
-    color: rgba(#51565d, 0.7);
+    &:hover {
+      background: rgba(172, 229, 255, 0.397);
+    }
+
+    h2 {
+      font-size: 15px;
+      margin: 0;
+      color: #51565d;
+    }
+
+    p {
+      margin-top: 4px;
+      font-size: 12px;
+      margin-bottom: 0;
+      font-weight: 500;
+      color: rgba(#51565d, 0.7);
+    }
   }
 }
