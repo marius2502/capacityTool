@@ -44,113 +44,122 @@ export class BroncoCalendar extends LitElement {
   async firstUpdated() {
     this.currentDate = new Date();
     this.maxDays = this.getMaxDaysofMonth(this.currentDate);
-    this.entries = this.entryService.getEntries().filter(e =>
-      (e.startDate.getMonth() === this.currentDate.getMonth()) && (e.startDate.getFullYear() === this.currentDate.getFullYear()));
-
+    await this.getEntries();
     this.loaded = true;
   }
 
+  async getEntries() {
+    try {
+      this.entries = await this.entryService.getEntries() as Entry[];
+      this.entries.filter(e =>
+        (e.startDate.getMonth() === this.currentDate.getMonth()) && (e.startDate.getFullYear() === this.currentDate.getFullYear()));
+      } catch (error) {
+        // No entries fetched
+        console.log('Servor error');
+        this.entries = [];
+      }
+  }
+
   getMaxDaysofMonth(date: Date): number {
-    const lastDayInMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0);
-    return lastDayInMonth.getDate();
-  }
-
-  getNumberArray(): number[] {
-    const numberArr: number[] = [];
-    for (let i = 1; i <= this.maxDays; i++) {
-      numberArr.push(i);
+      const lastDayInMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+      return lastDayInMonth.getDate();
     }
-    return numberArr;
-  }
 
-  /**
-   *
-   * The calender always begins with monday so that weekdays from last month are shown. This method returns them if first day of month is no Monday
-   * @returns {number[]}
-   * @memberof BroncoCalendar
-   */
-  getWeekdaysOfLastMonth(): number[] {
-    // Gives back the last month
-    const previousMonth = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth(), 0);
-
-    // Weekday of first day in this month
-    let weekDayThisMonth = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth(), 1).getDay() - 1;
-    weekDayThisMonth === -1 ? weekDayThisMonth = 6 : '';
-
-    const maxDaysOfPreviousMonth = this.getMaxDaysofMonth(previousMonth);
-    const numberArr = [];
-    // TODO
-    for (let i = maxDaysOfPreviousMonth; i > maxDaysOfPreviousMonth - weekDayThisMonth; i--) {
-      numberArr.push(i);
+    getNumberArray(): number[] {
+      const numberArr: number[] = [];
+      for (let i = 1; i <= this.maxDays; i++) {
+        numberArr.push(i);
+      }
+      return numberArr;
     }
-    return numberArr.reverse();
-  }
 
-  getWeekdaysOfNextMonth(): number[] {
-    // TODO
-    // Weekday of last day in this month
-    let weekDayThisMonth = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth(), this.maxDays).getDay() - 1;
-    weekDayThisMonth === -1 ? weekDayThisMonth = 6 : '';
-    const numberArr = [];
-    for (let i = 1; i < 7 - weekDayThisMonth; i++) {
-      numberArr.push(i);
+    /**
+     *
+     * The calender always begins with monday so that weekdays from last month are shown. This method returns them if first day of month is no Monday
+     * @returns {number[]}
+     * @memberof BroncoCalendar
+     */
+    getWeekdaysOfLastMonth(): number[] {
+      // Gives back the last month
+      const previousMonth = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth(), 0);
+
+      // Weekday of first day in this month
+      let weekDayThisMonth = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth(), 1).getDay() - 1;
+      weekDayThisMonth === -1 ? weekDayThisMonth = 6 : '';
+
+      const maxDaysOfPreviousMonth = this.getMaxDaysofMonth(previousMonth);
+      const numberArr = [];
+      // TODO
+      for (let i = maxDaysOfPreviousMonth; i > maxDaysOfPreviousMonth - weekDayThisMonth; i--) {
+        numberArr.push(i);
+      }
+      return numberArr.reverse();
     }
-    return numberArr;
-  }
 
-  nextMonth() {
-    const newDate = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth() + 2, 0);
-    this.updateDate(newDate);
-  }
-
-  previousMonth() {
-    const newDate = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth(), 0);
-    this.updateDate(newDate);
-  }
-
-  updateDate(newDate: Date) {
-    this.currentDate = newDate;
-    this.maxDays = this.getMaxDaysofMonth(newDate);
-    this.entries = this.entryService.getEntries().filter(e =>
-      (e.startDate.getMonth() === this.currentDate.getMonth()) && (e.startDate.getFullYear() === this.currentDate.getFullYear()));
-  }
-
-  getStyleMap(gridEntry: GridEntry) {
-    return {
-      gridRow: gridEntry.gridRow,
-      gridColumnStart: gridEntry.gridColumnStart,
-      gridColumnEnd: gridEntry.gridColumnEnd,
-    };
-
-  }
-
-
-  changeStatusOfDay(event: any) {
-    const dayElement = event.path[0] as HTMLElement;
-
-    if (dayElement.classList.contains('day')) {
-      dayElement.classList.contains('day--occupied') ?
-        dayElement.classList.remove('day--occupied') :
-        dayElement.classList.add('day--occupied');
+    getWeekdaysOfNextMonth(): number[] {
+      // TODO
+      // Weekday of last day in this month
+      let weekDayThisMonth = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth(), this.maxDays).getDay() - 1;
+      weekDayThisMonth === -1 ? weekDayThisMonth = 6 : '';
+      const numberArr = [];
+      for (let i = 1; i < 7 - weekDayThisMonth; i++) {
+        numberArr.push(i);
+      }
+      return numberArr;
     }
-  }
 
-  filterEntriesForDay(num: number): Entry[] {
-    return this.entries.filter(entry => entry.startDate.getDate() <= num && entry.endDate.getDate() >= num);
-  }
+    async nextMonth() {
+      const newDate = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth() + 2, 0);
+      await this.updateDate(newDate);
+    }
 
-  formatDate(date: Date) {
-    return `${date.getDate()}.${date.getMonth() + 1}.${date.getFullYear()}`
-  }
+    async previousMonth() {
+      const newDate = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth(), 0);
+      await this.updateDate(newDate);
+    }
 
-  render() {
-    return html`
+    async updateDate(newDate: Date) {
+      this.currentDate = newDate;
+      this.maxDays = this.getMaxDaysofMonth(newDate);
+      await this.getEntries();
+    }
+
+    getStyleMap(gridEntry: GridEntry) {
+      return {
+        gridRow: gridEntry.gridRow,
+        gridColumnStart: gridEntry.gridColumnStart,
+        gridColumnEnd: gridEntry.gridColumnEnd,
+      };
+
+    }
+
+
+    changeStatusOfDay(event: any) {
+      const dayElement = event.path[0] as HTMLElement;
+
+      if (dayElement.classList.contains('day')) {
+        dayElement.classList.contains('day--occupied') ?
+          dayElement.classList.remove('day--occupied') :
+          dayElement.classList.add('day--occupied');
+      }
+    }
+
+    filterEntriesForDay(num: number): Entry[] {
+      return this.entries.filter(entry => entry.startDate.getDate() <= num && entry.endDate.getDate() >= num);
+    }
+
+    formatDate(date: Date) {
+      return `${date.getDate()}.${date.getMonth() + 1}.${date.getFullYear()}`
+    }
+
+    render() {
+      return html`
     ${this.loaded ?
-    html`
+          html`
     <div class="calendar-container">
       <div class="calendar-header">
 
-        <bronco-icon iconName="keyboard_arrow_left" @click=${()=> this.previousMonth()}></bronco-icon>
+        <bronco-icon iconName="keyboard_arrow_left" @click=${() => this.previousMonth()}></bronco-icon>
 
 
         <div class="monthYear">
@@ -160,7 +169,7 @@ export class BroncoCalendar extends LitElement {
         </div>
 
 
-        <bronco-icon iconName="keyboard_arrow_right" @click=${()=> this.nextMonth()}></bronco-icon>
+        <bronco-icon iconName="keyboard_arrow_right" @click=${() => this.nextMonth()}></bronco-icon>
 
 
 
@@ -173,12 +182,12 @@ export class BroncoCalendar extends LitElement {
         ${this.getNumberArray().map(num => html`<div id="day-${num}" class="day ${this.filterEntriesForDay(num).length ? 'day--occupied' : ''}">
           <span id="num">${num}</span>
           ${this.filterEntriesForDay(num).map(e =>
-            html`
-            <span class="entry">${e.title}</span>
-            `)}
+          html`
+          <span class="entry">${e.title}</span>
+          `)}
           ${this.filterEntriesForDay(num).length ? html`<div class="entryDetail">
             ${this.filterEntriesForDay(num).map(e =>
-            html`
+              html`
             <div class="entryInfo">
               <h2>${e.title}</h2>
               <p>${this.formatDate(e.startDate)} - ${this.formatDate(e.startDate)}</p>
@@ -192,21 +201,21 @@ export class BroncoCalendar extends LitElement {
         ${this.getWeekdaysOfNextMonth().map(num => html`<div class="day day--disabled"><span id="numBottom">${num}</span></div>`)}
 
         <!-- <section class="task task--warning">Projects</section>
-                              <section class="task task--danger">Design Sprint</section>
-                              <section class="task task--primary">Product Checkup 1
-                                <div class="task__detail">
-                                  <h2>Product Checkup 1</h2>
-                                  <p>15-17th November</p>
-                                </div>
-                              </section>
-                              <section class="task task--info">Product Checkup 2</section> -->
+                                  <section class="task task--danger">Design Sprint</section>
+                                  <section class="task task--primary">Product Checkup 1
+                                    <div class="task__detail">
+                                      <h2>Product Checkup 1</h2>
+                                      <p>15-17th November</p>
+                                    </div>
+                                  </section>
+                                  <section class="task task--info">Product Checkup 2</section> -->
       </div>
     </div>
     ` :
-    ''}
+          ''}
 `
+    }
   }
-}
 
 // ${this.gridEntries.filter(e => e.startDate.getMonth() === this.currentDate.getMonth()).map(entry => html`
 // <section style='${styleMap(this.getStyleMap(entry))}' class="task task--${entry.color}">${entry.title},

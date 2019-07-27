@@ -22,5 +22,8 @@ module.exports = {
       use: [ { loader: 'file-loader', options: { outputPath: 'assets/', publicPath: '/assets' } } ]
     }
   ] },
-  plugins: [ new HtmlWebpackPlugin({template: './src/index.html'}) ]
+  plugins: [ new HtmlWebpackPlugin(
+    {
+      template: './src/index.html'
+    }) ]
 };

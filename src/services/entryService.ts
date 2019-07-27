@@ -1,17 +1,25 @@
-import { Entry } from "../models/entry";
+import { HttpClient } from './httpClient';
+import { Entry } from '../models/entry';
 
 export class EntrySercice {
 
-  entries: Entry[] = [
-    { title: 'Streichen', startDate: new Date(2019, 6, 22), endDate: new Date(2019, 6, 31) },
-    { title: 'Tapezieren', startDate: new Date(2019, 6, 2), endDate: new Date(2019, 6, 4) },
-    { title: 'Anderes', startDate: new Date(2019, 6, 2), endDate: new Date(2019, 6, 8) },
-    { title: 'Anderes2', startDate: new Date(2019, 6, 2), endDate: new Date(2019, 6, 8) },
-    { title: 'Laminat legen', startDate: new Date(2019, 7, 2), endDate: new Date(2019, 7, 9) }
-  ]
+  private httpClient = new HttpClient({baseURL: 'http://localhost:3000/'});
 
-  getEntries() {
-    return this.entries;
+  async getEntries() {
+    try {
+    const response = await this.httpClient.get('entries');
 
+    const entries = (await response.json()) as Entry[];
+
+    // Parse string dates in correct Date format
+    entries.forEach(entry => {
+      entry.startDate = new Date(entry.startDate);
+      entry.endDate = new Date(entry.endDate);
+    });
+
+    return entries;
+    } catch (error) {
+      console.log(error);
+    }
   }
 }
