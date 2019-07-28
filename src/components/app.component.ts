@@ -51,7 +51,7 @@ export class BroncoCalendar extends LitElement {
   async getEntries() {
     try {
       this.entries = await this.entryService.getEntries() as Entry[];
-      this.entries.filter(e =>
+      this.entries = this.entries.filter(e =>
         (e.startDate.getMonth() === this.currentDate.getMonth()) && (e.startDate.getFullYear() === this.currentDate.getFullYear()));
       } catch (error) {
         // No entries fetched
@@ -122,6 +122,7 @@ export class BroncoCalendar extends LitElement {
       this.currentDate = newDate;
       this.maxDays = this.getMaxDaysofMonth(newDate);
       await this.getEntries();
+      console.log(this.entries);
     }
 
     getStyleMap(gridEntry: GridEntry) {
@@ -159,7 +160,7 @@ export class BroncoCalendar extends LitElement {
     <div class="calendar-container">
       <div class="calendar-header">
 
-        <bronco-icon iconName="keyboard_arrow_left" @click=${() => this.previousMonth()}></bronco-icon>
+        <bronco-icon iconName="keyboard_arrow_left" @click=${async () => await this.previousMonth()}></bronco-icon>
 
 
         <div class="monthYear">
@@ -169,7 +170,7 @@ export class BroncoCalendar extends LitElement {
         </div>
 
 
-        <bronco-icon iconName="keyboard_arrow_right" @click=${() => this.nextMonth()}></bronco-icon>
+        <bronco-icon iconName="keyboard_arrow_right" @click=${async () => await this.nextMonth()}></bronco-icon>
 
 
 
