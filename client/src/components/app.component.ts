@@ -134,7 +134,6 @@ export class BroncoCalendar extends LitElement {
 
     }
 
-
     changeStatusOfDay(event: any) {
       const dayElement = event.path[0] as HTMLElement;
 
